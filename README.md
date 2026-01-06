@@ -58,7 +58,7 @@ A full-stack discussion platform with nested comments, similar to Reddit, GitHub
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/Nikanwar3/Nested-Posts-comments.git]
+git clone https://github.com/Nikanwar3/Nested-Posts-comments.git
 cd Nested-Posts-comments
 ```
 
