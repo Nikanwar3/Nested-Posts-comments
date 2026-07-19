@@ -43,6 +43,7 @@ A full-stack discussion platform with nested comments, similar to Reddit, GitHub
 - **Prisma** - Type-safe ORM for schema modeling, migrations, and queries
 - **SQLite** - Persistent relational storage (swappable for Postgres/MySQL via Prisma's datasource config)
 - **Typesense** - Instant full-text search over posts, with automatic re-indexing on create and startup backfill
+- **Trigger.dev** - Scheduled background job that reconciles any posts that failed to index into Typesense
 - **CORS** - Cross-origin resource sharing support
 
 ### Development Tools
@@ -341,6 +342,14 @@ typesense-server --data-dir=/tmp/typesense-data --api-key=xyz123devkey --listen-
 On startup, the app creates the `posts` collection if it doesn't exist and backfills any existing
 posts. If Typesense isn't running, the rest of the app still works — search requests just return a
 503 until it's available.
+
+### Background Jobs (Trigger.dev)
+A scheduled task (`trigger/reindexPosts.ts`) runs hourly to reconcile any posts that failed to index
+into Typesense (e.g. if Typesense was down when a post was created). Set `TRIGGER_SECRET_KEY` in
+`.env`, then run the local dev worker:
+```bash
+npm run trigger:dev
+```
 
 ## 🧪 Testing
 
