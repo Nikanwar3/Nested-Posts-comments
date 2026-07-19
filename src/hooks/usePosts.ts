@@ -39,9 +39,28 @@ export const usePosts = () => {
     }
   };
 
+  const searchPosts = async (query: string) => {
+    if (!query.trim()) {
+      await fetchPosts();
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE}/posts/search?q=${encodeURIComponent(query)}`);
+      if (!response.ok) throw new Error('Search failed');
+      const data = await response.json();
+      setPosts(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Search failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  return { posts, loading, error, createPost, refetch: fetchPosts };
+  return { posts, loading, error, createPost, searchPosts, refetch: fetchPosts };
 };

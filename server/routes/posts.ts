@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { postModel } from '../models/Post';
+import { searchPosts } from '../search';
 import { CreatePostRequest } from '../types';
 
 const router = Router();
@@ -7,6 +8,21 @@ const router = Router();
 router.get('/', async (req, res) => {
   const posts = await postModel.findAll();
   res.json(posts);
+});
+
+router.get('/search', async (req, res) => {
+  const q = (req.query.q as string) || '';
+  if (!q.trim()) {
+    return res.json([]);
+  }
+
+  try {
+    const results = await searchPosts(q);
+    res.json(results);
+  } catch (err) {
+    console.error('Search failed:', err);
+    res.status(503).json({ error: 'Search is temporarily unavailable' });
+  }
 });
 
 router.get('/:id', async (req, res) => {

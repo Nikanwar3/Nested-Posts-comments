@@ -11,6 +11,7 @@ A full-stack discussion platform with nested comments, similar to Reddit, GitHub
 - **Reply System** - Reply to posts or existing comments
 - **Real-time Updates** - Comments update instantly after posting
 - **Visual Threading** - Clear indentation and connection lines for nested comments
+- **Full-Text Search** - Instant search over post titles and content, powered by Typesense
 
 ### User Experience
 - **Responsive Design** - Optimized for mobile, tablet, and desktop
@@ -41,6 +42,7 @@ A full-stack discussion platform with nested comments, similar to Reddit, GitHub
 - **TypeScript** - Type-safe server development
 - **Prisma** - Type-safe ORM for schema modeling, migrations, and queries
 - **SQLite** - Persistent relational storage (swappable for Postgres/MySQL via Prisma's datasource config)
+- **Typesense** - Instant full-text search over posts, with automatic re-indexing on create and startup backfill
 - **CORS** - Cross-origin resource sharing support
 
 ### Development Tools
@@ -317,6 +319,10 @@ NODE_ENV=production
 PORT=3001
 FRONTEND_URL=https://your-frontend-domain.com
 DATABASE_URL=file:./dev.db
+TYPESENSE_HOST=localhost
+TYPESENSE_PORT=8108
+TYPESENSE_PROTOCOL=http
+TYPESENSE_API_KEY=your-typesense-api-key
 ```
 
 ### Database Setup
@@ -325,6 +331,16 @@ automatically. To apply schema migrations:
 ```bash
 npm run prisma:migrate
 ```
+
+### Search Setup
+Search is powered by [Typesense](https://typesense.org). Run a local instance (Docker or the
+standalone binary) before starting the server:
+```bash
+typesense-server --data-dir=/tmp/typesense-data --api-key=xyz123devkey --listen-port=8108
+```
+On startup, the app creates the `posts` collection if it doesn't exist and backfills any existing
+posts. If Typesense isn't running, the rest of the app still works — search requests just return a
+503 until it's available.
 
 ## 🧪 Testing
 
@@ -349,7 +365,7 @@ npm run prisma:migrate
 - **User Authentication** - Login/register system
 - **User Profiles** - Avatar, username, profile pages
 - **Vote System** - Upvote/downvote posts and comments
-- **Search Functionality** - Search posts and comments
+- **Comment Search** - Extend full-text search to comment content, not just posts
 - **Categories/Tags** - Organize posts by topics
 - **Real-time Updates** - WebSocket integration
 - **Rich Text Editor** - Markdown support for posts/comments

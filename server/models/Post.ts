@@ -1,5 +1,6 @@
 import { prisma } from '../db';
 import { Post } from '../types';
+import { indexPost } from '../search';
 
 function serialize(post: { id: string; title: string; content: string; createdAt: Date }): Post {
   return { ...post, createdAt: post.createdAt.toISOString() };
@@ -8,7 +9,15 @@ function serialize(post: { id: string; title: string; content: string; createdAt
 export class PostModel {
   async create(post: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
     const created = await prisma.post.create({ data: post });
-    return serialize(created);
+    const serialized = serialize(created);
+
+    try {
+      await indexPost(serialized);
+    } catch (err) {
+      console.error('Typesense indexing failed (post still saved to DB):', err);
+    }
+
+    return serialized;
   }
 
   async findById(id: string): Promise<Post | undefined> {

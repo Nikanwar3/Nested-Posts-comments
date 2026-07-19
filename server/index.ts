@@ -3,6 +3,7 @@ import cors from 'cors';
 import postsRouter from './routes/posts';
 import commentsRouter from './routes/comments';
 import { postModel } from './models/Post';
+import { ensurePostsCollection, indexPost } from './search';
 
 const app = express();
 const PORT = 3001;
@@ -34,7 +35,19 @@ const seedData = async () => {
   console.log('Sample data seeded successfully');
 };
 
+const initSearch = async () => {
+  try {
+    await ensurePostsCollection();
+    const posts = await postModel.findAll();
+    await Promise.all(posts.map(indexPost));
+    console.log(`Typesense ready, indexed ${posts.length} post(s)`);
+  } catch (err) {
+    console.error('Typesense unavailable, search will be disabled:', err instanceof Error ? err.message : err);
+  }
+};
+
 app.listen(PORT, async () => {
   console.log(`Server running on http://localhost:${PORT}`);
   await seedData();
+  await initSearch();
 });
