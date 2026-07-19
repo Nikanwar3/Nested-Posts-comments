@@ -1,30 +1,24 @@
+import { prisma } from '../db';
 import { Post } from '../types';
 
+function serialize(post: { id: string; title: string; content: string; createdAt: Date }): Post {
+  return { ...post, createdAt: post.createdAt.toISOString() };
+}
+
 export class PostModel {
-  private posts: Post[] = [];
-
-  create(post: Omit<Post, 'id' | 'createdAt'>): Post {
-    const newPost: Post = {
-      ...post,
-      id: this.generateId(),
-      createdAt: new Date().toISOString(),
-    };
-    this.posts.push(newPost);
-    return newPost;
+  async create(post: Omit<Post, 'id' | 'createdAt'>): Promise<Post> {
+    const created = await prisma.post.create({ data: post });
+    return serialize(created);
   }
 
-  findById(id: string): Post | undefined {
-    return this.posts.find(post => post.id === id);
+  async findById(id: string): Promise<Post | undefined> {
+    const post = await prisma.post.findUnique({ where: { id } });
+    return post ? serialize(post) : undefined;
   }
 
-  findAll(): Post[] {
-    return this.posts.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-  }
-
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
+  async findAll(): Promise<Post[]> {
+    const posts = await prisma.post.findMany({ orderBy: { createdAt: 'desc' } });
+    return posts.map(serialize);
   }
 }
 

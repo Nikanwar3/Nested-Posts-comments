@@ -39,7 +39,8 @@ A full-stack discussion platform with nested comments, similar to Reddit, GitHub
 - **Node.js** - JavaScript runtime environment
 - **Express.js** - Web application framework
 - **TypeScript** - Type-safe server development
-- **In-Memory Storage** - Simple data persistence (easily replaceable with database)
+- **Prisma** - Type-safe ORM for schema modeling, migrations, and queries
+- **SQLite** - Persistent relational storage (swappable for Postgres/MySQL via Prisma's datasource config)
 - **CORS** - Cross-origin resource sharing support
 
 ### Development Tools
@@ -111,7 +112,11 @@ discussion-thread-system/
 │   │   └── comments.ts          # Comment-related endpoints
 │   ├── types/                   # Backend type definitions
 │   │   └── index.ts             # Server-side interfaces
+│   ├── db.ts                    # Prisma Client instance
 │   └── index.ts                 # Express server entry point
+├── prisma/
+│   ├── schema.prisma             # Post/Comment models & datasource config
+│   └── migrations/               # Generated SQL migrations
 ├── package.json                 # Project dependencies and scripts
 ├── nodemon.json                 # Nodemon configuration
 ├── tailwind.config.js           # Tailwind CSS configuration
@@ -311,6 +316,14 @@ Create a `.env` file for production configuration:
 NODE_ENV=production
 PORT=3001
 FRONTEND_URL=https://your-frontend-domain.com
+DATABASE_URL=file:./dev.db
+```
+
+### Database Setup
+This project uses Prisma with SQLite. On first install, `npm install` runs `prisma generate`
+automatically. To apply schema migrations:
+```bash
+npm run prisma:migrate
 ```
 
 ## 🧪 Testing
@@ -344,7 +357,7 @@ FRONTEND_URL=https://your-frontend-domain.com
 - **Moderation Tools** - Report, hide, delete functionality
 
 ### Technical Improvements
-- **Database Integration** - PostgreSQL or MongoDB
+- **Production Database** - Swap SQLite for Postgres/MySQL via Prisma's datasource config
 - **Caching Layer** - Redis for performance
 - **API Rate Limiting** - Prevent abuse
 - **Input Sanitization** - XSS protection
@@ -389,4 +402,4 @@ If you encounter any issues or have questions:
 
 ---
 
-**Built with ❤️ using React, TypeScript, and Express.js**
+**Built with ❤️ using React, TypeScript, Express.js, and Prisma**

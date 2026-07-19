@@ -4,24 +4,24 @@ import { CreateCommentRequest } from '../types';
 
 const router = Router();
 
-router.get('/post/:postId', (req, res) => {
-  const nestedComments = commentModel.findNestedByPostId(req.params.postId);
+router.get('/post/:postId', async (req, res) => {
+  const nestedComments = await commentModel.findNestedByPostId(req.params.postId);
   res.json(nestedComments);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { postId, content, parentId }: CreateCommentRequest = req.body;
-  
+
   if (!postId || !content) {
     return res.status(400).json({ error: 'Post ID and content are required' });
   }
 
-  const comment = commentModel.create({
+  const comment = await commentModel.create({
     postId,
     content,
     parentId: parentId || null,
   });
-  
+
   res.status(201).json(comment);
 });
 

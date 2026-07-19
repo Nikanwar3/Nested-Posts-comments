@@ -19,17 +19,22 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Discussion Thread API is running' });
 });
 
-// Seed some sample data
-const seedData = () => {
-  const samplePost = postModel.create({
+// Seed some sample data (only on first run, since data now persists via Prisma)
+const seedData = async () => {
+  const existing = await postModel.findAll();
+  if (existing.length > 0) {
+    return;
+  }
+
+  await postModel.create({
     title: 'Welcome to the Discussion Thread System!',
     content: 'This is a demo post to showcase the nested comment functionality. Feel free to add comments and replies to test the threading system.',
   });
-  
+
   console.log('Sample data seeded successfully');
 };
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server running on http://localhost:${PORT}`);
-  seedData();
+  await seedData();
 });

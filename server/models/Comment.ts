@@ -1,26 +1,32 @@
+import { prisma } from '../db';
 import { Comment, NestedComment } from '../types';
 
+function serialize(comment: {
+  id: string;
+  postId: string;
+  content: string;
+  parentId: string | null;
+  createdAt: Date;
+}): Comment {
+  return { ...comment, createdAt: comment.createdAt.toISOString() };
+}
+
 export class CommentModel {
-  private comments: Comment[] = [];
-
-  create(comment: Omit<Comment, 'id' | 'createdAt'>): Comment {
-    const newComment: Comment = {
-      ...comment,
-      id: this.generateId(),
-      createdAt: new Date().toISOString(),
-    };
-    this.comments.push(newComment);
-    return newComment;
+  async create(comment: Omit<Comment, 'id' | 'createdAt'>): Promise<Comment> {
+    const created = await prisma.comment.create({ data: comment });
+    return serialize(created);
   }
 
-  findByPostId(postId: string): Comment[] {
-    return this.comments
-      .filter(comment => comment.postId === postId)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  async findByPostId(postId: string): Promise<Comment[]> {
+    const comments = await prisma.comment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return comments.map(serialize);
   }
 
-  findNestedByPostId(postId: string): NestedComment[] {
-    const comments = this.findByPostId(postId);
+  async findNestedByPostId(postId: string): Promise<NestedComment[]> {
+    const comments = await this.findByPostId(postId);
     return this.buildNestedStructure(comments);
   }
 
@@ -34,7 +40,7 @@ export class CommentModel {
 
     comments.forEach(comment => {
       const nestedComment = commentMap.get(comment.id)!;
-      
+
       if (comment.parentId === null) {
         rootComments.push(nestedComment);
       } else {
@@ -46,10 +52,6 @@ export class CommentModel {
     });
 
     return rootComments;
-  }
-
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
   }
 }
 
